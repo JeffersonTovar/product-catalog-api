@@ -26,7 +26,7 @@ jobs:
       run: dotnet build --no-restore --configuration Release
 
     - name: Ejecutar pruebas
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test Catalog.Tests/Catalog.Tests.csproj --verbosity normal
 
   docker:
     runs-on: ubuntu-latest
