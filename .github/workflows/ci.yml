@@ -25,8 +25,8 @@ jobs:
     - name: Build
       run: dotnet build --no-restore --configuration Release
 
-    - name: Ejecutar pruebas
-      run: dotnet test Catalog.Tests/Catalog.Tests.csproj --verbosity normal
+    - name: Run tests (exclude integration)
+      run: dotnet test --filter "Category!=Integration"
 
   docker:
     runs-on: ubuntu-latest

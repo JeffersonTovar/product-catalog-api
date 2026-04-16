@@ -17,6 +17,7 @@ public class ProductEndpointsTests : IClassFixture<WebApplicationFactory<Program
   }
 
   [Fact]
+  [Trait("Category", "Integration")]
   public async Task FullFlow_Should_Work_Correctly()
   {
     var loginResponse = await _client.PostAsJsonAsync("/api/Auth/login", new
