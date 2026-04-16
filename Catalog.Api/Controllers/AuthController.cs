@@ -14,12 +14,18 @@ public class AuthController : ControllerBase
     _jwtService = jwtService;
   }
 
-  [HttpPost("login")]
-  public IActionResult Login(string username, string password)
+  public class LoginRequest
   {
-    if (username != "admin" || password != "1234")
+    public string Username { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+  }
+
+  [HttpPost("login")]
+  public IActionResult Login([FromBody] LoginRequest request)
+  {
+    if (request.Username != "admin" || request.Password != "admin")
       return Unauthorized();
-    var token = _jwtService.GenerateToken(username);
+    var token = _jwtService.GenerateToken(request.Username);
     return Ok(new { token });
   }
 }

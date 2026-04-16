@@ -1,18 +1,35 @@
-version: '3.9'
-
 services:
-  db:
+  postgres:
     image: postgres:15
-    container_name: catalog-db
+    container_name: catalog_db
     restart: always
     environment:
-      POSTGRES_USER: catalog_user
-      POSTGRES_PASSWORD: catalog_pass
-      POSTGRES_DB: catalog_db
+      POSTGRES_DB: catalogdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: catalog_api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "5000:8080"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=catalogdb;Username=postgres;Password=postgres
+      - Jwt__Key=super_secret_key_12345_super_secret_key_12345
+      - Jwt__Issuer=CatalogApi
+      - Jwt__Audience=CatalogApi
 
 volumes:
   postgres_data:

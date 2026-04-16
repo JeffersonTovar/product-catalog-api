@@ -12,13 +12,22 @@ public class ProductController : ControllerBase
 {
   private readonly GenerateProductsUseCase _generateProductsUseCase;
   private readonly GetProductsUseCase _getProductsUseCase;
+  private readonly GetProductByIdUseCase _getByIdUseCase;
+  private readonly UpdateProductUseCase _updateUseCase;
+  private readonly DeleteProductUseCase _deleteUseCase;
 
-  public ProductController(
+public ProductController(
+    GetProductByIdUseCase getByIdUseCase,
     GenerateProductsUseCase generateProductsUseCase,
-    GetProductsUseCase getProductsUseCase)
+    GetProductsUseCase getProductsUseCase,
+    UpdateProductUseCase updateUseCase,
+    DeleteProductUseCase deleteUseCase)
   {
     _generateProductsUseCase = generateProductsUseCase;
     _getProductsUseCase = getProductsUseCase;
+    _getByIdUseCase = getByIdUseCase;
+    _updateUseCase = updateUseCase;
+    _deleteUseCase = deleteUseCase;
   }
 
   [HttpGet]
@@ -35,6 +44,33 @@ public class ProductController : ControllerBase
       categoryId);
 
     return Ok(result);
+  }
+
+  [HttpGet("{id}")]
+  public async Task<IActionResult> GetById(Guid id)
+  {
+    var result = await _getByIdUseCase.ExecuteAsync(id);
+    if (result == null) return NotFound();
+    return Ok(result);
+  }
+
+  [Authorize]
+  [HttpPut]
+  public async Task<IActionResult> Update([FromBody] UpdateProductDto dto)
+  {
+    var success = await _updateUseCase.ExecuteAsync(dto);
+    if (!success) return NotFound();
+    return Ok();
+  }
+
+  [Authorize]
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(Guid id)
+  {
+    var success = await _deleteUseCase.ExecuteAsync(id);
+    if (!success) return NotFound();
+
+    return Ok();
   }
 
   [HttpPost]

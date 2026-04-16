@@ -1,6 +1,7 @@
 using Catalog.Application.DTOs;
 using Catalog.Application.UseCases;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Catalog.Api.Controllers;
 
@@ -14,9 +15,9 @@ public class CategoryController : ControllerBase
   {
     _createCategoryUseCase = createCategoryUseCase;
   }
-
+  [Authorize]
   [HttpPost]
-  public async Task<IActionResult> Create(CreateCategoryDto dto)
+  public async Task<IActionResult> Create([FromBody] CreateCategoryDto dto)
   {
     var result = await _createCategoryUseCase.ExecuteAsync(dto);
     return Ok(result);
