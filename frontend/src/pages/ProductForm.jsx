@@ -1,46 +1,31 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../api/axiosClient";
 import { useNavigate, useParams } from "react-router-dom";
+import axiosClient from "../api/axiosClient";
+import {
+  Container, TextField, Button, Typography, Paper, Stack
+} from "@mui/material";
 
 export default function ProductForm() {
+  const [form, setForm] = useState({
+    productName: "",
+    unitPrice: "",
+    unitsInStock: "",
+    categoryName: ""
+  });
+
   const navigate = useNavigate();
   const { id } = useParams();
 
   const isEdit = !!id;
 
-  const [form, setForm] = useState({
-    productName: "",
-    unitPrice: "",
-    unitsInStock: "",
-    categoryId: ""
-  });
-
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
-
-  // 🔥 cargar producto si es edición
   useEffect(() => {
     if (isEdit) {
-      setLoading(true);
-
       axiosClient.get(`/Product/${id}`)
-        .then(res => {
-          setForm({
-            productName: res.data.productName || "",
-            unitPrice: res.data.unitPrice || "",
-            unitsInStock: res.data.unitsInStock || "",
-            categoryId: res.data.categoryId || ""
-          });
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Error cargando producto");
-        })
-        .finally(() => setLoading(false));
+        .then(res => setForm(res.data))
+        .catch(err => console.error(err));
     }
-  }, [id, isEdit]);
+  }, [id]);
 
-  // 🔥 manejar cambios
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -48,114 +33,71 @@ export default function ProductForm() {
     });
   };
 
-  // 🔥 validaciones
-  const validate = () => {
-    let newErrors = {};
-
-    if (!form.productName.trim()) {
-      newErrors.productName = "El nombre es obligatorio";
-    }
-
-    if (!form.unitPrice || Number(form.unitPrice) <= 0) {
-      newErrors.unitPrice = "El precio debe ser mayor a 0";
-    }
-
-    if (form.unitsInStock < 0) {
-      newErrors.unitsInStock = "Stock inválido";
-    }
-
-    if (!form.categoryId) {
-      newErrors.categoryId = "La categoría es obligatoria";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // 🔥 submit
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validate()) return;
-
-    setLoading(true);
-
+  const handleSubmit = async () => {
     try {
       if (isEdit) {
-        await axiosClient.put("/Product", { ...form, id });
+        await axiosClient.put("/Product", form);
       } else {
         await axiosClient.post("/Product", form);
       }
-
       navigate("/products");
-
-    } catch (error) {
-      console.error(error);
-      alert("Error al guardar producto");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      alert("Error al guardar");
     }
   };
 
   return (
-    <div>
-      <h2>{isEdit ? "Editar Producto" : "Crear Producto"}</h2>
+    <Container maxWidth="sm">
+      <Paper sx={{ p: 4, mt: 4 }}>
+        <Typography variant="h5" mb={2}>
+          {isEdit ? "Editar Producto" : "Crear Producto"}
+        </Typography>
 
-      {loading && <p>Cargando...</p>}
-
-      <form onSubmit={handleSubmit}>
-
-        {/* Nombre */}
-        <div>
-          <input
+        <Stack spacing={2}>
+          <TextField
+            label="Nombre"
             name="productName"
-            placeholder="Nombre"
             value={form.productName}
             onChange={handleChange}
           />
-          {errors.productName && <p>{errors.productName}</p>}
-        </div>
 
-        {/* Precio */}
-        <div>
-          <input
+          <TextField
+            label="Precio"
             name="unitPrice"
-            type="number"
-            placeholder="Precio"
             value={form.unitPrice}
             onChange={handleChange}
           />
-          {errors.unitPrice && <p>{errors.unitPrice}</p>}
-        </div>
 
-        {/* Stock */}
-        <div>
-          <input
+          <TextField
+            label="Stock"
             name="unitsInStock"
-            type="number"
-            placeholder="Stock"
             value={form.unitsInStock}
             onChange={handleChange}
           />
-          {errors.unitsInStock && <p>{errors.unitsInStock}</p>}
-        </div>
 
-        {/* Categoría */}
-        <div>
-          <input
-            name="categoryId"
-            placeholder="CategoryId"
-            value={form.categoryId}
+          <TextField
+            label="Categoría"
+            name="categoryName"
+            value={form.categoryName}
             onChange={handleChange}
           />
-          {errors.categoryId && <p>{errors.categoryId}</p>}
-        </div>
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Guardando..." : "Guardar"}
-        </button>
+          <Stack direction="row" spacing={2}>
+            <Button variant="contained" onClick={handleSubmit}>
+              Guardar
+            </Button>
 
-      </form>
-    </div>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={() => navigate("/products")}
+            >
+              Cancelar
+            </Button>
+          </Stack>
+        </Stack>
+      </Paper>
+    </Container>
   );
 }

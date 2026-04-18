@@ -11,13 +11,13 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("AllowFrontend",
-    policy =>
-    {
-      policy.WithOrigins("http://localhost:5173")
-        .AllowAnyHeader()
-        .AllowAnyMethod();
-    });
+  options.AddPolicy("AllowAll", policy =>
+  {
+    policy
+      .AllowAnyOrigin()
+      .AllowAnyHeader()
+      .AllowAnyMethod();
+  });
 });
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -81,7 +81,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
-app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();

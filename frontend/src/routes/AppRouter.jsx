@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login";
 import Products from "../pages/Products";
+import Navbar from "../components/Navbar";
 import ProductForm from "../pages/ProductForm";
 import PrivateRoute from "./PrivateRoute";
 
@@ -15,6 +16,7 @@ export default function AppRouter() {
           path="/products"
           element={
             <PrivateRoute>
+              <Navbar />
               <Products />
             </PrivateRoute>
           }

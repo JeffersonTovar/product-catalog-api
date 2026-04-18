@@ -2,104 +2,120 @@ import { useEffect, useState } from "react";
 import axiosClient from "../api/axiosClient";
 import { Link } from "react-router-dom";
 
+import {
+  Container,
+  TextField,
+  Button,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+  Typography,
+  Pagination,
+  Stack
+} from "@mui/material";
+
 export default function Products() {
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState("");
-  const [categoryId, setCategoryId] = useState("");
   const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const pageSize = 10;
   const [totalPages, setTotalPages] = useState(1);
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const res = await axiosClient.get("/Product", {
-        params: {
-          page,
-          pageSize,
-          search: search || null,
-          categoryId: categoryId || null
-        }
-      });
 
-      setProducts(res.data.data);
-      setTotalPages(res.data.totalPages);
+  const fetchProducts = async () => {
+    try {
+      const res = await axiosClient.get(
+        `/Product?search=${search}&page=${page}&pageSize=10`
+      );
+
+      setProducts(res.data.data || []);
+      setTotalPages(res.data.totalPages || 1);
     } catch (err) {
       console.error(err);
     }
-    setLoading(false);
   };
+
   useEffect(() => {
     fetchProducts();
-  }, [page, search, categoryId]);
+  }, [search, page]);
+
   const handleDelete = async (id) => {
     if (!confirm("¿Eliminar producto?")) return;
 
     await axiosClient.delete(`/Product/${id}`);
     fetchProducts();
   };
-  return (
-    <div>
-      <h2>Productos</h2>
 
-      <div style={{ marginBottom: "20px" }}>
-        <input
-          type="text"
-          placeholder="Buscar producto..."
+  return (
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Productos
+      </Typography>
+
+      <Stack direction="row" spacing={2} sx={{ mb: 3 }}>
+        <TextField
+          label="Buscar producto"
+          variant="outlined"
+          fullWidth
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value);
             setPage(1);
+            setSearch(e.target.value);
           }}
         />
-      </div>
 
-      {loading ? <p>Cargando...</p> : (
-        <table border="1" width="100%">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Categoría</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
+        <Link to="/products/create">
+          <Button variant="contained">
+            Crear
+          </Button>
+        </Link>
+      </Stack>
 
-          <tbody>
-            {products.map(p => (
-              <tr key={p.id}>
-                <td>{p.productName}</td>
-                <td>${p.unitPrice}</td>
-                <td>{p.unitsInStock}</td>
-                <td>{p.categoryName}</td>
-                <td>
+      <Paper>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Precio</TableCell>
+              <TableCell>Stock</TableCell>
+              <TableCell>Acciones</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {products.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell>{p.productName}</TableCell>
+                <TableCell>${p.unitPrice}</TableCell>
+                <TableCell>{p.unitsInStock}</TableCell>
+                <TableCell>
                   <Link to={`/products/edit/${p.id}`}>
-                    <button>Editar</button>
+                    <Button size="small">Editar</Button>
                   </Link>
-                  <button onClick={() => handleDelete(p.id)}>
+
+                  <Button
+                    color="error"
+                    size="small"
+                    onClick={() => handleDelete(p.id)}
+                  >
                     Eliminar
-                  </button>
-                </td>
-              </tr>
+                  </Button>
+                </TableCell>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
-      )}
-      <div style={{ marginTop: "20px" }}>
-        <button disabled={page === 1} onClick={() => setPage(page - 1)}>
-          ⬅ Anterior
-        </button>
-        <span> Página {page} de {totalPages} </span>
-        <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>
-          Siguiente ➡
-        </button>
-      </div>
-      <br />
-      <Link to="/products/create">
-        <button>Crear producto</button>
-      </Link>
-    </div>
+          </TableBody>
+        </Table>
+      </Paper>
+
+      <Stack alignItems="center" sx={{ mt: 3 }}>
+        <Pagination
+          count={totalPages}
+          page={page}
+          onChange={(e, value) => setPage(value)}
+          color="primary"
+        />
+      </Stack>
+    </Container>
   );
 }

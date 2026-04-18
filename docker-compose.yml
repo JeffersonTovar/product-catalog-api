@@ -31,5 +31,13 @@ services:
       - Jwt__Issuer=CatalogApi
       - Jwt__Audience=CatalogApi
 
+  frontend:
+    build: ./frontend
+    container_name: catalog_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
 volumes:
   postgres_data:
