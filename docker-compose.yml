@@ -32,7 +32,10 @@ services:
       - Jwt__Audience=CatalogApi
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:5000/api
     container_name: catalog_frontend
     ports:
       - "3000:80"
